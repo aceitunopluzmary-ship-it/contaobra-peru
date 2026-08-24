@@ -1,0 +1,10 @@
+{
+  "name": "CONTAOBRA PERÚ",
+  "short_name": "CONTAOBRA",
+  "description": "Aplicativo de gestión contable para empresas constructoras en el Perú.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b1f3a",
+  "theme_color": "#0b1f3a",
+  "orientation": "portrait"
+}
