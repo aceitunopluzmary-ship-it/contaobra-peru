@@ -1458,51 +1458,408 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       GUARDAR DOCUMENTO
-       ===================================================== */
+   GUARDAR AVANCE
+   ===================================================== */
 
-    if (btnGuardarDocumento) {
+if (btnGuardarDocumento) {
 
-        btnGuardarDocumento.addEventListener(
-            "click",
-            () => {
+    btnGuardarDocumento.addEventListener("click", () => {
 
-                const documentosGuardados =
-                    JSON.parse(
-                        localStorage.getItem(
-                            "contaobra_documentos"
-                        ) || "[]"
-                    );
+        if (!operaciones.length) {
+            alert("No hay operaciones para guardar.");
+            return;
+        }
 
-
-                documentosGuardados.push({
-
-                    modulo: moduloActual,
-
-                    fecha:
-                        new Date().toISOString(),
-
-                    operaciones
-
-                });
-
-
-                localStorage.setItem(
-                    "contaobra_documentos",
-                    JSON.stringify(
-                        documentosGuardados
-                    )
-                );
-
-
-                alert(
-                    "Documento guardado correctamente."
-                );
-
-            }
+        const documentosGuardados = JSON.parse(
+            localStorage.getItem("contaobra_documentos") || "[]"
         );
 
+        const nuevoDocumento = {
+            id: Date.now(),
+            modulo: moduloActual,
+            fecha: new Date().toISOString(),
+            operaciones: operaciones
+        };
+
+        documentosGuardados.push(nuevoDocumento);
+
+        localStorage.setItem(
+            "contaobra_documentos",
+            JSON.stringify(documentosGuardados)
+        );
+
+        alert("Avance guardado correctamente.");
+
+        mostrarMisRegistros();
+    });
+
+}
+
+
+/* =====================================================
+   MIS REGISTROS
+   ===================================================== */
+
+function mostrarMisRegistros() {
+
+    let documentosGuardados = JSON.parse(
+        localStorage.getItem("contaobra_documentos") || "[]"
+    );
+
+    let contenedor = document.getElementById("misRegistros");
+
+    if (!contenedor) {
+
+        contenedor = document.createElement("div");
+
+        contenedor.id = "misRegistros";
+        contenedor.className = "mis-registros";
+
+        panelPrincipal.appendChild(contenedor);
     }
+
+    if (!documentosGuardados.length) {
+
+        contenedor.innerHTML = `
+            <div class="tarjeta-registros">
+                <h2>📂 Mis registros</h2>
+                <p>Aún no tienes avances guardados.</p>
+            </div>
+        `;
+
+        return;
+    }
+
+    contenedor.innerHTML = `
+        <div class="tarjeta-registros">
+
+            <div class="cabecera-registros">
+
+                <div>
+                    <h2>📂 Mis registros</h2>
+                    <p>Continúa trabajando en tus avances guardados.</p>
+                </div>
+
+            </div>
+
+            <div class="lista-registros">
+
+                ${documentosGuardados.map((doc, indice) => {
+
+                    const config = modulos[doc.modulo];
+
+                    const cantidad =
+                        doc.operaciones
+                            ? doc.operaciones.length
+                            : 0;
+
+                    const fecha =
+                        new Date(doc.fecha)
+                            .toLocaleDateString("es-PE");
+
+                    return `
+                        <div class="registro-guardado">
+
+                            <div>
+                                <strong>
+                                    ${config
+                                        ? config.titulo
+                                        : "Registro contable"}
+                                </strong>
+
+                                <span>
+                                    ${cantidad} operación(es)
+                                </span>
+
+                                <small>
+                                    Guardado: ${fecha}
+                                </small>
+                            </div>
+
+                            <div class="acciones-registro">
+
+                                <button
+                                    type="button"
+                                    class="btn-continuar-registro"
+                                    data-indice="${indice}"
+                                >
+                                    Continuar
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="btn-eliminar-registro"
+                                    data-indice="${indice}"
+                                >
+                                    Eliminar
+                                </button>
+
+                            </div>
+
+                        </div>
+                    `;
+
+                }).join("")}
+
+            </div>
+
+        </div>
+    `;
+
+
+    /* CONTINUAR REGISTRO */
+
+    contenedor
+        .querySelectorAll(".btn-continuar-registro")
+        .forEach(boton => {
+
+            boton.addEventListener("click", () => {
+
+                const indice =
+                    Number(
+                        boton.dataset.indice
+                    );
+
+                continuarRegistro(indice);
+
+            });
+
+        });
+
+
+    /* ELIMINAR REGISTRO */
+
+    contenedor
+        .querySelectorAll(".btn-eliminar-registro")
+        .forEach(boton => {
+
+            boton.addEventListener("click", () => {
+
+                const indice =
+                    Number(
+                        boton.dataset.indice
+                    );
+
+                eliminarRegistro(indice);
+
+            });
+
+        });
+
+}
+
+
+/* =====================================================
+   CONTINUAR REGISTRO
+   ===================================================== */
+
+function continuarRegistro(indice) {
+
+    const documentosGuardados = JSON.parse(
+        localStorage.getItem("contaobra_documentos") || "[]"
+    );
+
+    const documento =
+        documentosGuardados[indice];
+
+    if (!documento) return;
+
+    moduloActual = documento.modulo;
+
+    operaciones =
+        documento.operaciones || [];
+
+    mostrarPantalla(pantallaModulo);
+
+    vistaFormulario.classList.remove("oculto");
+    vistaDocumento.classList.add("oculto");
+
+    const configuracion =
+        modulos[moduloActual];
+
+    if (!configuracion) return;
+
+    cabeceraFormulario.innerHTML = `
+
+        <div class="titulo-modulo">
+
+            <p class="etiqueta">
+                ${configuracion.tipo}
+            </p>
+
+            <h1>
+                ${configuracion.titulo}
+            </h1>
+
+            <p>
+                ${configuracion.subtitulo}
+            </p>
+
+        </div>
+
+    `;
+
+    generarFormularioDesdeGuardado();
+
+}
+
+
+/* =====================================================
+   GENERAR FORMULARIO DESDE GUARDADO
+   ===================================================== */
+
+function generarFormularioDesdeGuardado() {
+
+    formularioModulo.innerHTML = "";
+
+    const contenedor =
+        document.createElement("div");
+
+    contenedor.className =
+        "contenedor-operaciones";
+
+
+    const titulo =
+        document.createElement("div");
+
+    titulo.className =
+        "titulo-operacion";
+
+    titulo.innerHTML = `
+
+        <span>📂</span>
+
+        <div>
+
+            <h2>
+                Continuar avance
+            </h2>
+
+            <p>
+                Puedes revisar los gastos anteriores y agregar nuevos.
+            </p>
+
+        </div>
+
+    `;
+
+    contenedor.appendChild(titulo);
+
+
+    operaciones.forEach((operacion, indice) => {
+
+        const cuadro =
+            crearCuadroOperacion(indice + 1);
+
+        cuadro.querySelector(".op-fecha").value =
+            operacion.fecha || "";
+
+        cuadro.querySelector(".op-tipo-documento").value =
+            operacion.tipoDocumento || "DNI";
+
+        cuadro.querySelector(".op-documento").value =
+            operacion.documento || "";
+
+        cuadro.querySelector(".op-nombre").value =
+            operacion.nombre || "";
+
+        cuadro.querySelector(".op-comprobante").value =
+            operacion.comprobante || "";
+
+        cuadro.querySelector(".op-serie").value =
+            operacion.serie || "";
+
+        cuadro.querySelector(".op-numero").value =
+            operacion.numero || "";
+
+        cuadro.querySelector(".op-descripcion").value =
+            operacion.descripcion || "";
+
+        cuadro.querySelector(".op-monto").value =
+            operacion.monto || "";
+
+        cuadro.querySelector(".op-igv").value =
+            Number(operacion.igv || 0).toFixed(2);
+
+        cuadro.querySelector(".op-total").value =
+            Number(operacion.total || 0).toFixed(2);
+
+        contenedor.appendChild(cuadro);
+
+    });
+
+
+    const botonAgregar =
+        document.createElement("button");
+
+    botonAgregar.type = "button";
+    botonAgregar.className = "btn-anadir-operacion";
+    botonAgregar.textContent = "+ Añadir nuevo gasto";
+
+
+    botonAgregar.addEventListener("click", () => {
+
+        const numero =
+            contenedor.querySelectorAll(
+                ".cuadro-operacion"
+            ).length + 1;
+
+        const nueva =
+            crearCuadroOperacion(numero);
+
+        contenedor.insertBefore(
+            nueva,
+            botonAgregar
+        );
+
+    });
+
+
+    contenedor.appendChild(botonAgregar);
+
+    formularioModulo.appendChild(contenedor);
+
+}
+
+
+/* =====================================================
+   ELIMINAR REGISTRO
+   ===================================================== */
+
+function eliminarRegistro(indice) {
+
+    const confirmar =
+        confirm(
+            "¿Quieres eliminar este registro guardado?"
+        );
+
+    if (!confirmar) return;
+
+    const documentosGuardados = JSON.parse(
+        localStorage.getItem("contaobra_documentos") || "[]"
+    );
+
+    documentosGuardados.splice(indice, 1);
+
+    localStorage.setItem(
+        "contaobra_documentos",
+        JSON.stringify(documentosGuardados)
+    );
+
+    mostrarMisRegistros();
+
+}
+
+
+/* =====================================================
+   MOSTRAR REGISTROS AL ENTRAR AL PANEL
+   ===================================================== */
+
+if (panelPrincipal) {
+
+    mostrarMisRegistros();
+
+}
 
 
     /* =====================================================
