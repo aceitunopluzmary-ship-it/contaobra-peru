@@ -13,11 +13,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const pantallaBienvenida = document.getElementById("pantallaBienvenida");
     const panelPrincipal = document.getElementById("panelPrincipal");
     const pantallaModulo = document.getElementById("pantallaModulo");
-
+const pantallaDocumentos =
+    document.getElementById("pantallaDocumentos");
+   
     const btnRegistrar = document.getElementById("btnRegistrar");
-    const btnComenzar = document.getElementById("btnComenzar");
-    const btnVolver = document.getElementById("btnVolver");
-    const btnListo = document.getElementById("btnListo");
+const btnComenzar = document.getElementById("btnComenzar");
+const btnVolver = document.getElementById("btnVolver");
+const btnListo = document.getElementById("btnListo");
+
+const btnVolverDocumentos =
+    document.getElementById("btnVolverDocumentos");
 
     const formularioModulo = document.getElementById("formularioModulo");
     const cabeceraFormulario = document.getElementById("cabeceraFormulario");
@@ -153,24 +158,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function mostrarPantalla(pantalla) {
 
-        [
-            pantallaRegistro,
-            pantallaBienvenida,
-            panelPrincipal,
-            pantallaModulo
-        ].forEach(p => {
+    [
+        pantallaRegistro,
+        pantallaBienvenida,
+        panelPrincipal,
+        pantallaModulo,
+        pantallaDocumentos
+    ].forEach(p => {
 
-            if (p) {
-                p.classList.add("oculto");
-            }
-
-        });
-
-        if (pantalla) {
-            pantalla.classList.remove("oculto");
+        if (p) {
+            p.classList.add("oculto");
         }
-    }
 
+    });
+
+    if (pantalla) {
+        pantalla.classList.remove("oculto");
+    }
+    }
 
     /* =====================================================
    INICIO
@@ -2253,3 +2258,17 @@ if (panelPrincipal) {
     );
 
 });
+
+/* =====================================================
+   DOCUMENTOS GUARDADOS - VOLVER
+   ===================================================== */
+
+if (btnVolverDocumentos) {
+
+    btnVolverDocumentos.addEventListener("click", () => {
+
+        mostrarPantalla(panelPrincipal);
+
+    });
+
+}
