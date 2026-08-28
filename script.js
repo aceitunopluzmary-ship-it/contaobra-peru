@@ -24,6 +24,9 @@ const btnListo = document.getElementById("btnListo");
 const btnVolverDocumentos =
     document.getElementById("btnVolverDocumentos");
 
+const btnAbrirDocumentos =
+    document.getElementById("btnAbrirDocumentos");
+
     const formularioModulo = document.getElementById("formularioModulo");
     const cabeceraFormulario = document.getElementById("cabeceraFormulario");
 
@@ -2268,6 +2271,22 @@ if (btnVolverDocumentos) {
     btnVolverDocumentos.addEventListener("click", () => {
 
         mostrarPantalla(panelPrincipal);
+
+    });
+
+}
+
+/* =====================================================
+   ABRIR DOCUMENTOS GUARDADOS
+   ===================================================== */
+
+if (btnAbrirDocumentos) {
+
+    btnAbrirDocumentos.addEventListener("click", () => {
+
+        mostrarPantalla(pantallaDocumentos);
+
+        mostrarMisRegistros();
 
     });
 
