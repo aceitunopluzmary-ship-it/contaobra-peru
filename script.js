@@ -173,11 +173,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       INICIO
-       ===================================================== */
+   INICIO
+   ===================================================== */
 
-    // FORZAMOS EL REGISTRO AL ENTRAR
+// Comprobar si ya existe un usuario registrado
+const usuarioGuardado =
+    localStorage.getItem("contaobra_usuario");
+
+if (usuarioGuardado) {
+
+    try {
+
+        datosUsuario =
+            JSON.parse(usuarioGuardado);
+
+        if (nombreUsuario) {
+            nombreUsuario.textContent =
+                datosUsuario.nombre || "";
+        }
+
+        // Usuario ya registrado
+        mostrarPantalla(pantallaBienvenida);
+
+    } catch (error) {
+
+        // Si los datos están dañados,
+        // volvemos al registro
+        localStorage.removeItem(
+            "contaobra_usuario"
+        );
+
+        mostrarPantalla(pantallaRegistro);
+    }
+
+} else {
+
+    // Primera vez que entra
     mostrarPantalla(pantallaRegistro);
+
+}
 
 
     /* =====================================================
