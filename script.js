@@ -1491,7 +1491,7 @@ if (usuarioGuardado) {
     }
 
 
-    /* =====================================================
+/* =====================================================
    GUARDAR AVANCE
    ===================================================== */
 
@@ -1504,15 +1504,52 @@ if (btnGuardarDocumento) {
             return;
         }
 
-        const documentosGuardados = JSON.parse(
+        let documentosGuardados = JSON.parse(
             localStorage.getItem("contaobra_documentos") || "[]"
         );
 
+        // Si estamos editando un documento existente,
+        // actualizamos ese mismo documento.
+        if (window.documentoEnEdicionId) {
+
+            const indice = documentosGuardados.findIndex(
+                documento =>
+                    documento.id === window.documentoEnEdicionId
+            );
+
+            if (indice !== -1) {
+
+                documentosGuardados[indice].modulo =
+                    moduloActual;
+
+                documentosGuardados[indice].fecha =
+                    new Date().toISOString();
+
+                documentosGuardados[indice].operaciones =
+                    operaciones;
+
+                localStorage.setItem(
+                    "contaobra_documentos",
+                    JSON.stringify(documentosGuardados)
+                );
+
+                alert("Documento actualizado correctamente.");
+
+                return;
+            }
+        }
+
+        // Crear un documento nuevo
         const nuevoDocumento = {
+
             id: Date.now(),
+
             modulo: moduloActual,
+
             fecha: new Date().toISOString(),
+
             operaciones: operaciones
+
         };
 
         documentosGuardados.push(nuevoDocumento);
@@ -1522,25 +1559,30 @@ if (btnGuardarDocumento) {
             JSON.stringify(documentosGuardados)
         );
 
-        alert("Avance guardado correctamente.");
+        // Guardamos el ID para futuras actualizaciones
+        window.documentoEnEdicionId =
+            nuevoDocumento.id;
 
-        mostrarMisRegistros();
+        alert("Documento guardado correctamente.");
+
     });
 
 }
 
 
 /* =====================================================
-   MIS REGISTROS
+/* =====================================================
+   DOCUMENTOS GUARDADOS
    ===================================================== */
 
 function mostrarMisRegistros() {
 
-    let documentosGuardados = JSON.parse(
+    const documentosGuardados = JSON.parse(
         localStorage.getItem("contaobra_documentos") || "[]"
     );
 
-    let contenedor = document.getElementById("misRegistros");
+    let contenedor =
+        document.getElementById("misRegistros");
 
     if (!contenedor) {
 
@@ -1552,17 +1594,56 @@ function mostrarMisRegistros() {
         panelPrincipal.appendChild(contenedor);
     }
 
+
+    /* =================================================
+       SIN DOCUMENTOS
+       ================================================= */
+
     if (!documentosGuardados.length) {
 
         contenedor.innerHTML = `
             <div class="tarjeta-registros">
-                <h2>📂 Mis registros</h2>
-                <p>Aún no tienes avances guardados.</p>
+
+                <div class="cabecera-registros">
+
+                    <div>
+                        <h2>📁 Documentos guardados</h2>
+
+                        <p>
+                            Aquí aparecerán los documentos
+                            que guardes en CONTAOBRA.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="sin-documentos">
+
+                    <div>
+                        📄
+                    </div>
+
+                    <p>
+                        Aún no tienes documentos guardados.
+                    </p>
+
+                    <small>
+                        Cuando guardes un avance,
+                        aparecerá aquí.
+                    </small>
+
+                </div>
+
             </div>
         `;
 
         return;
     }
+
+
+    /* =================================================
+       MOSTRAR DOCUMENTOS
+       ================================================= */
 
     contenedor.innerHTML = `
         <div class="tarjeta-registros">
@@ -1570,17 +1651,30 @@ function mostrarMisRegistros() {
             <div class="cabecera-registros">
 
                 <div>
-                    <h2>📂 Mis registros</h2>
-                    <p>Continúa trabajando en tus avances guardados.</p>
+
+                    <h2>📁 Documentos guardados</h2>
+
+                    <p>
+                        Consulta y continúa trabajando
+                        en tus documentos.
+                    </p>
+
                 </div>
 
+                <span class="contador-documentos">
+                    ${documentosGuardados.length}
+                    documento(s)
+                </span>
+
             </div>
+
 
             <div class="lista-registros">
 
                 ${documentosGuardados.map((doc, indice) => {
 
-                    const config = modulos[doc.modulo];
+                    const config =
+                        modulos[doc.modulo];
 
                     const cantidad =
                         doc.operaciones
@@ -1588,27 +1682,54 @@ function mostrarMisRegistros() {
                             : 0;
 
                     const fecha =
-                        new Date(doc.fecha)
-                            .toLocaleDateString("es-PE");
+                        doc.fecha
+                            ? new Date(doc.fecha)
+                                .toLocaleDateString("es-PE")
+                            : "-";
+
+                    let total = 0;
+
+                    if (doc.operaciones) {
+
+                        doc.operaciones.forEach(op => {
+
+                            total +=
+                                Number(op.total) || 0;
+
+                        });
+
+                    }
 
                     return `
                         <div class="registro-guardado">
 
-                            <div>
+                            <div class="informacion-registro">
+
                                 <strong>
-                                    ${config
-                                        ? config.titulo
-                                        : "Registro contable"}
+                                    📄 ${
+                                        config
+                                            ? config.titulo
+                                            : "Documento contable"
+                                    }
                                 </strong>
 
                                 <span>
-                                    ${cantidad} operación(es)
+                                    ${cantidad}
+                                    operación(es)
+                                </span>
+
+                                <span>
+                                    Total:
+                                    S/ ${total.toFixed(2)}
                                 </span>
 
                                 <small>
-                                    Guardado: ${fecha}
+                                    Guardado:
+                                    ${fecha}
                                 </small>
+
                             </div>
+
 
                             <div class="acciones-registro">
 
@@ -1641,7 +1762,9 @@ function mostrarMisRegistros() {
     `;
 
 
-    /* CONTINUAR REGISTRO */
+    /* =================================================
+       CONTINUAR DOCUMENTO
+       ================================================= */
 
     contenedor
         .querySelectorAll(".btn-continuar-registro")
@@ -1661,7 +1784,9 @@ function mostrarMisRegistros() {
         });
 
 
-    /* ELIMINAR REGISTRO */
+    /* =================================================
+       ELIMINAR DOCUMENTO
+       ================================================= */
 
     contenedor
         .querySelectorAll(".btn-eliminar-registro")
@@ -1681,7 +1806,7 @@ function mostrarMisRegistros() {
         });
 
 }
-
+                                       
 
 /* =====================================================
    CONTINUAR REGISTRO
