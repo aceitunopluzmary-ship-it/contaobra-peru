@@ -2348,6 +2348,33 @@ if (panelPrincipal) {
         }
     );
 
+    /* =====================================================
+       DOCUMENTOS GUARDADOS - VOLVER
+       ===================================================== */
+
+    if (btnVolverDocumentos) {
+        btnVolverDocumentos.addEventListener("click", () => {
+            mostrarPantalla(panelPrincipal);
+        });
+    }
+
+    /* =====================================================
+       ABRIR DOCUMENTOS GUARDADOS
+       ===================================================== */
+
+    if (btnAbrirDocumentos) {
+        btnAbrirDocumentos.addEventListener("click", () => {
+            mostrarPantalla(pantallaDocumentos);
+            mostrarMisRegistros();
+        });
+    }
+
+    /* FIN */
+    console.log(
+        "CONTAOBRA Perú iniciado correctamente."
+    );
+
+});
 
     /* =====================================================
        FIN
@@ -2355,36 +2382,4 @@ if (panelPrincipal) {
 
     console.log(
         "CONTAOBRA Perú iniciado correctamente."
-    );
-
-});
-
-/* =====================================================
-   DOCUMENTOS GUARDADOS - VOLVER
-   ===================================================== */
-
-if (btnVolverDocumentos) {
-
-    btnVolverDocumentos.addEventListener("click", () => {
-
-        mostrarPantalla(panelPrincipal);
-
-    });
-
-}
-
-/* =====================================================
-   ABRIR DOCUMENTOS GUARDADOS
-   ===================================================== */
-
-if (btnAbrirDocumentos) {
-
-    btnAbrirDocumentos.addEventListener("click", () => {
-
-        mostrarPantalla(pantallaDocumentos);
-
-        mostrarMisRegistros();
-
-    });
-
-}
+    ); 
