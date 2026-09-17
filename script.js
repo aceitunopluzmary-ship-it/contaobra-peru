@@ -223,97 +223,119 @@ if (usuarioGuardado) {
 
 
     /* =====================================================
-       REGISTRO
-       ===================================================== */
+   REGISTRO
+   ===================================================== */
 
-    if (btnRegistrar) {
+if (btnRegistrar) {
 
-        btnRegistrar.addEventListener("click", () => {
+    btnRegistrar.addEventListener("click", () => {
 
-            const nombre =
-                document.getElementById("registroNombre").value.trim();
+        const nombre =
+            document.getElementById("registroNombre").value.trim();
 
-            const correo =
-                document.getElementById("registroCorreo").value.trim();
+        const correo =
+            document.getElementById("registroCorreo").value.trim();
 
-            const tipoDocumento =
-                document.getElementById("registroTipoDocumento").value;
+        const tipoDocumento =
+            document.getElementById("registroTipoDocumento").value;
 
-            const documento =
-                document.getElementById("registroDocumento").value.trim();
+        const documento =
+            document.getElementById("registroDocumento").value.trim();
 
-            const usuario =
-                document.getElementById("registroUsuario").value.trim();
+        const usuario =
+            document.getElementById("registroUsuario").value.trim();
 
-            const password =
-                document.getElementById("registroPassword").value;
+        const password =
+            document.getElementById("registroPassword").value;
 
-            const confirmar =
-                document.getElementById("registroConfirmar").value;
-
-
-            if (
-                !nombre ||
-                !correo ||
-                !documento ||
-                !usuario ||
-                !password ||
-                !confirmar
-            ) {
-
-                mostrarMensaje(
-                    "Completa todos los campos para continuar."
-                );
-
-                return;
-            }
+        const confirmar =
+            document.getElementById("registroConfirmar").value;
 
 
-            if (password.length < 6) {
+        /* ==========================================
+           COMPROBAR CAMPOS
+           ========================================== */
 
-                mostrarMensaje(
-                    "La contraseña debe tener mínimo 6 caracteres."
-                );
+        if (
+            !nombre ||
+            !correo ||
+            !documento ||
+            !usuario ||
+            !password ||
+            !confirmar
+        ) {
 
-                return;
-            }
+            mostrarMensaje(
+                "Completa todos los campos para continuar."
+            );
 
-
-            if (password !== confirmar) {
-
-                mostrarMensaje(
-                    "Las contraseñas no coinciden."
-                );
-
-                return;
-            }
-
-
-            if (!validarDocumento(tipoDocumento, documento)) {
-
-                mostrarMensaje(
-                    tipoDocumento === "DNI"
-                        ? "El DNI debe tener 8 números."
-                        : "El RUC debe tener 11 números."
-                );
-
-                return;
-            }
+            return;
+        }
 
 
-            datosUsuario = {
+        /* ==========================================
+           COMPROBAR CONTRASEÑA
+           ========================================== */
 
-                nombre,
-                correo,
-                tipoDocumento,
-                documento,
-                usuario
+        if (password.length < 6) {
 
-            };
+            mostrarMensaje(
+                "La contraseña debe tener mínimo 6 caracteres."
+            );
+
+            return;
+        }
 
 
-            // Guardamos solamente datos básicos.
-            // NO guardamos la contraseña.
+        if (password !== confirmar) {
+
+            mostrarMensaje(
+                "Las contraseñas no coinciden."
+            );
+
+            return;
+        }
+
+
+        /* ==========================================
+           COMPROBAR DNI / RUC
+           ========================================== */
+
+        if (!validarDocumento(tipoDocumento, documento)) {
+
+            mostrarMensaje(
+                tipoDocumento === "DNI"
+                    ? "El DNI debe tener 8 números."
+                    : "El RUC debe tener 11 números."
+            );
+
+            return;
+        }
+
+
+        /* ==========================================
+           CREAR DATOS DEL USUARIO
+           ========================================== */
+
+        datosUsuario = {
+
+            nombre: nombre,
+
+            correo: correo,
+
+            tipoDocumento: tipoDocumento,
+
+            documento: documento,
+
+            usuario: usuario
+        };
+
+
+        /* ==========================================
+           GUARDAR USUARIO DE FORMA SEGURA
+           ========================================== */
+
+        try {
 
             localStorage.setItem(
                 "contaobra_usuario",
@@ -321,48 +343,123 @@ if (usuarioGuardado) {
             );
 
 
-            nombreUsuario.textContent = nombre;
+            /* Comprobar que realmente quedó guardado */
+
+            const usuarioComprobado =
+                localStorage.getItem(
+                    "contaobra_usuario"
+                );
 
 
-            // Limpiar formulario
+            if (!usuarioComprobado) {
 
-            document.getElementById("registroNombre").value = "";
-            document.getElementById("registroCorreo").value = "";
-            document.getElementById("registroDocumento").value = "";
-            document.getElementById("registroUsuario").value = "";
-            document.getElementById("registroPassword").value = "";
-            document.getElementById("registroConfirmar").value = "";
+                mostrarMensaje(
+                    "No se pudo guardar el registro. Revisa el almacenamiento del navegador."
+                );
 
+                return;
+            }
+
+
+            /* Comprobar que se puede leer */
+
+            const usuarioVerificado =
+                JSON.parse(usuarioComprobado);
+
+
+            if (!usuarioVerificado) {
+
+                mostrarMensaje(
+                    "El registro no pudo ser verificado."
+                );
+
+                return;
+            }
+
+
+        } catch (error) {
+
+            console.error(
+                "Error al guardar el usuario:",
+                error
+            );
+
+            mostrarMensaje(
+                "No se pudo guardar el registro en este navegador."
+            );
+
+            return;
+        }
+
+
+        /* ==========================================
+           ACTUALIZAR NOMBRE
+           ========================================== */
+
+        if (nombreUsuario) {
+
+            nombreUsuario.textContent =
+                nombre;
+        }
+
+
+        /* ==========================================
+           LIMPIAR FORMULARIO
+           ========================================== */
+
+        document.getElementById(
+            "registroNombre"
+        ).value = "";
+
+        document.getElementById(
+            "registroCorreo"
+        ).value = "";
+
+        document.getElementById(
+            "registroDocumento"
+        ).value = "";
+
+        document.getElementById(
+            "registroUsuario"
+        ).value = "";
+
+        document.getElementById(
+            "registroPassword"
+        ).value = "";
+
+        document.getElementById(
+            "registroConfirmar"
+        ).value = "";
+
+
+        /* ==========================================
+           MENSAJE DE ÉXITO
+           ========================================== */
+
+        mostrarMensaje(
+            "¡Registro guardado correctamente!"
+        );
+
+
+        /* ==========================================
+           ENTRAR A LA PANTALLA DE BIENVENIDA
+           ========================================== */
+
+        setTimeout(() => {
 
             ocultarMensaje();
 
+            mostrarPantalla(
+                pantallaBienvenida
+            );
 
-            // Después del registro
-            mostrarPantalla(pantallaBienvenida);
+        }, 500);
 
-        });
+    });
 
-    }
+               }
+   
 
-
-    /* =====================================================
-       VALIDAR DNI / RUC
-       ===================================================== */
-
-    function validarDocumento(tipo, numero) {
-
-        const soloNumeros = numero.replace(/\D/g, "");
-
-        if (tipo === "DNI") {
-            return soloNumeros.length === 8;
-        }
-
-        if (tipo === "RUC") {
-            return soloNumeros.length === 11;
-        }
-
-        return false;
-    }
 
 
     /* =====================================================
